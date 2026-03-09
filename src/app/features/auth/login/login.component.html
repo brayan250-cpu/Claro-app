@@ -1,0 +1,106 @@
+<div class="login-container">
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <!-- Logo y título -->
+      <div class="login-header">
+        <div class="logo-container">
+          <img
+            class="logo-claro"
+            src="assets/branding/logo-claro-rojo.svg"
+            alt="Claro"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+        <h1>Sistema de Gestión de Viajes</h1>
+        <p class="subtitle">Ingrese sus credenciales para acceder</p>
+      </div>
+
+      <!-- Formulario -->
+      <mat-card-content>
+        <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+          <!-- Usuario -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Usuario</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="username"
+              name="username"
+              required
+              autocomplete="username"
+              [disabled]="loading()"
+            />
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+
+          <!-- Contraseña -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Contraseña</mat-label>
+            <input
+              matInput
+              [type]="hidePassword() ? 'password' : 'text'"
+              [(ngModel)]="password"
+              name="password"
+              required
+              autocomplete="current-password"
+              [disabled]="loading()"
+            />
+            <mat-icon matPrefix>lock</mat-icon>
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="togglePasswordVisibility()"
+              [disabled]="loading()"
+            >
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <!-- Mensaje de error -->
+          @if (errorMessage()) {
+            <div class="error-message">
+              <mat-icon>error</mat-icon>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <!-- Botón de login -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="full-width login-button"
+            [disabled]="loading() || !username() || !password()"
+          >
+            @if (loading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+              <span>Iniciando sesión...</span>
+            } @else {
+              <span>Iniciar Sesión</span>
+            }
+          </button>
+        </form>
+
+        <!-- Info de usuarios demo -->
+        <div class="demo-info">
+          <p class="demo-title"><strong>Usuarios de demostración:</strong></p>
+          <ul class="demo-users">
+            <li><code>empleado1</code> - Empleado/Solicitante</li>
+            <li><code>aprobador1</code> - Aprobador Nivel 1</li>
+            <li><code>aprobador2</code> - Aprobador Nivel 2</li>
+            <li><code>admin</code> - Administrador</li>
+            <li><code>asistente</code> - Asistente de Viaje</li>
+          </ul>
+          <p class="demo-note"><em>Cualquier contraseña es válida para la demo</em></p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>© 2026 CLARO Perú - América Móvil</p>
+    </div>
+  </div>
+</div>

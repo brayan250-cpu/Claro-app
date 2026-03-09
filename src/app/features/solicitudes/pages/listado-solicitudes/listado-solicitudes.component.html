@@ -1,0 +1,257 @@
+<div class="planner-container">
+  <!-- Header con combo filtro superior -->
+  <div class="page-header">
+    <div class="header-top">
+      <h1 class="page-title">
+        <mat-icon>travel_explore</mat-icon>
+        Gestión de Viajes
+      </h1>
+      
+      <button
+        mat-fab
+        extended
+        color="primary"
+        (click)="nuevaSolicitud()"
+        class="btn-nueva-mobile"
+      >
+        <mat-icon>add</mat-icon>
+        Nuevo Viaje
+      </button>
+    </div>
+
+    <!-- Filtro único superior -->
+    <div class="filter-control">
+      <mat-form-field appearance="outline" class="vista-select">
+        <mat-label>
+          <mat-icon>filter_alt</mat-icon>
+          Filtrar viajes
+        </mat-label>
+        <mat-select [(value)]="vistaActual" (selectionChange)="cambiarVista($event.value)">
+          @for (vista of vistas; track vista.value) {
+            <mat-option [value]="vista.value">
+              <mat-icon>{{ vista.icon }}</mat-icon>
+              <span>{{ vista.label }}</span>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          placeholder="Código, destino, motivo..."
+        />
+        <mat-icon matPrefix>search</mat-icon>
+        @if (searchText()) {
+          <button
+            matSuffix
+            mat-icon-button
+            (click)="searchText.set('')"
+            matTooltip="Limpiar"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Grid de Cards tipo Planner -->
+  <div class="planner-content">
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="60"></mat-spinner>
+        <p>Cargando viajes...</p>
+      </div>
+    } @else if (solicitudesFiltradas().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <mat-icon>flight_takeoff</mat-icon>
+        </div>
+        <h2>No hay viajes</h2>
+        <p>
+          @if (searchText()) {
+            No se encontraron viajes que coincidan con tu búsqueda.
+          } @else if (vistaActual() === 'EN_CURSO') {
+            No tienes viajes en curso en este momento.
+          } @else if (vistaActual() === 'PENDIENTES') {
+            No tienes viajes pendientes de aprobación.
+          } @else {
+            Aún no has creado ningún viaje.
+          }
+        </p>
+        @if (!searchText() && vistaActual() === 'TODOS') {
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="nuevaSolicitud()"
+            class="btn-crear-primero"
+          >
+            <mat-icon>add_circle</mat-icon>
+            Crear primer viaje
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="cards-grid">
+        @for (solicitud of solicitudesFiltradas(); track solicitud.id) {
+          <mat-card class="travel-card" [class]="getEstadoBadge(solicitud.estado).class">
+            <!-- Header de la Card -->
+            <mat-card-header>
+              <div class="card-header-content">
+                <div class="card-title-section">
+                  <h3 class="card-codigo">{{ solicitud.codigo }}</h3>
+                  <div class="card-badge" [style.background-color]="getEstadoBadge(solicitud.estado).color">
+                    <mat-icon>{{ getEstadoBadge(solicitud.estado).icon }}</mat-icon>
+                    <span>{{ getEstadoLabel(solicitud.estado) }}</span>
+                  </div>
+                </div>
+                
+                <button
+                  mat-icon-button
+                  [matMenuTriggerFor]="menuCard"
+                  class="card-menu-btn"
+                  (click)="$event.stopPropagation()"
+                >
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+
+                <mat-menu #menuCard="matMenu">
+                  <button mat-menu-item (click)="verDetalle(solicitud)">
+                    <mat-icon>visibility</mat-icon>
+                    <span>Ver detalle</span>
+                  </button>
+
+                  @if (puedeEditar(solicitud)) {
+                    <button mat-menu-item (click)="editarSolicitud(solicitud)">
+                      <mat-icon>edit</mat-icon>
+                      <span>Editar</span>
+                    </button>
+                  }
+
+                  @if (puedeEnviar(solicitud)) {
+                    <button mat-menu-item (click)="enviarAAprobacion(solicitud)">
+                      <mat-icon>send</mat-icon>
+                      <span>Enviar a aprobación</span>
+                    </button>
+                  }
+
+                  <!-- Acciones de Aprobador -->
+                  @if (isAprobador) {
+                    @if (puedeAprobar(solicitud)) {
+                      <mat-divider></mat-divider>
+                      <button mat-menu-item (click)="aprobarSolicitud(solicitud)" class="action-approve">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Aprobar viaje</span>
+                      </button>
+                      <button mat-menu-item (click)="rechazarSolicitud(solicitud)" class="action-reject">
+                        <mat-icon>cancel</mat-icon>
+                        <span>Rechazar viaje</span>
+                      </button>
+                    }
+                  }
+
+                  @if (puedeCancelar(solicitud)) {
+                    <mat-divider></mat-divider>
+                    <button mat-menu-item (click)="cancelarSolicitud(solicitud)" class="action-danger">
+                      <mat-icon>block</mat-icon>
+                      <span>Cancelar viaje</span>
+                    </button>
+                  }
+
+                  @if (puedeEditar(solicitud)) {
+                    <button mat-menu-item (click)="eliminarSolicitud(solicitud)" class="action-danger">
+                      <mat-icon>delete</mat-icon>
+                      <span>Eliminar</span>
+                    </button>
+                  }
+                </mat-menu>
+              </div>
+            </mat-card-header>
+
+            <!-- Contenido de la Card -->
+            <mat-card-content (click)="verDetalle(solicitud)">
+              <!-- MÓDULO 1.2: Solo campos esenciales -->
+              
+              <!-- Fecha de Creación -->
+              <div class="card-info-field">
+                <label class="field-label"><strong>Fecha de Creación:</strong></label>
+                <span class="field-value">{{ formatFecha(solicitud.fechaCreacion) }}</span>
+              </div>
+
+              <!-- Fecha de Salida y Retorno -->
+              <div class="card-info-field">
+                <label class="field-label"><strong>Fecha de Salida:</strong></label>
+                <span class="field-value">{{ formatFecha(solicitud.fechaSalida) }}</span>
+              </div>
+              
+              <div class="card-info-field">
+                <label class="field-label"><strong>Fecha de Retorno:</strong></label>
+                <span class="field-value">{{ formatFecha(solicitud.fechaRetorno) }}</span>
+              </div>
+
+              <!-- Destino -->
+              <div class="card-info-field">
+                <label class="field-label"><strong>Destino:</strong></label>
+                <span class="field-value">{{ solicitud.destino }}</span>
+              </div>
+
+              <!-- Presupuesto Total -->
+              <div class="card-info-field">
+                <label class="field-label"><strong>Presupuesto Total:</strong></label>
+                <span class="field-value field-value-right">{{ formatMonto(solicitud.presupuestoTotal) }}</span>
+              </div>
+
+              <!-- Motivo del Viaje -->
+              <div class="card-info-field full-width">
+                <label class="field-label"><strong>Motivo del Viaje:</strong></label>
+                <span class="field-value">{{ solicitud.motivoViaje }}</span>
+              </div>
+            </mat-card-content>
+
+            <!-- Acciones contextuales (botones rápidos) -->
+            <mat-card-actions>
+              <div class="card-actions">
+                @if (puedeEditar(solicitud)) {
+                  <button mat-button color="primary" (click)="editarSolicitud(solicitud)">
+                    <mat-icon>edit</mat-icon>
+                    Editar
+                  </button>
+                  <button mat-button color="accent" (click)="enviarAAprobacion(solicitud)">
+                    <mat-icon>send</mat-icon>
+                    Enviar
+                  </button>
+                } @else if (puedeAprobar(solicitud) && isAprobador) {
+                  <button mat-button color="primary" (click)="aprobarSolicitud(solicitud)">
+                    <mat-icon>check_circle</mat-icon>
+                    Aprobar
+                  </button>
+                  <button mat-button (click)="rechazarSolicitud(solicitud)">
+                    <mat-icon>cancel</mat-icon>
+                    Rechazar
+                  </button>
+                } @else if (solicitud.estado === EstadoSolicitud.APROBADO_N2 || solicitud.estado === EstadoSolicitud.COMPLETADO) {
+                  <button mat-button color="accent" (click)="registrarGastos(solicitud)">
+                    <mat-icon>receipt_long</mat-icon>
+                    Registrar gastos
+                  </button>
+                  <button mat-button (click)="verDetalle(solicitud)">
+                    <mat-icon>visibility</mat-icon>
+                    Ver detalles
+                  </button>
+                } @else {
+                  <button mat-button (click)="verDetalle(solicitud)">
+                    <mat-icon>visibility</mat-icon>
+                    Ver detalles
+                  </button>
+                }
+              </div>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+    }
+  </div>
+</div>

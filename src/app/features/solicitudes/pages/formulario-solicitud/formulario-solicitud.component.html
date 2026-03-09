@@ -1,0 +1,315 @@
+<div class="formulario-solicitud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button mat-icon-button (click)="cancelar()" class="btn-back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-content">
+      <h1>{{ isEditMode() ? 'Editar Solicitud' : 'Nueva Solicitud de Presupuesto' }}</h1>
+      <p>Ingrese la estimación de gastos para su viaje de trabajo</p>
+    </div>
+  </div>
+
+  <!-- Accesos Rápidos -->
+  <div class="quick-access">
+    <h3><mat-icon>bolt</mat-icon> Destinos Frecuentes</h3>
+    <div class="chips-container">
+      @for (ciudad of ciudades(); track ciudad.id) {
+        @if (ciudad.esFrequente) {
+          <mat-chip 
+            (click)="seleccionarDestinoRapido(ciudad.nombre)"
+            class="chip-destino">
+            <mat-icon>place</mat-icon>
+            {{ ciudad.nombre }}
+          </mat-chip>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="ux-progress-card">
+    <div class="ux-progress-top">
+      <span class="progress-pill">Avance {{ getCompletionPercentage() }}%</span>
+      <span class="progress-text">Completa los bloques en orden para enviar más rapido</span>
+    </div>
+    <div class="progress-steps">
+      <div class="step-chip" [class.done]="isDatosBasicosCompletos()">
+        <mat-icon>{{ isDatosBasicosCompletos() ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        Datos basicos
+      </div>
+      <div class="step-chip" [class.done]="isViaticoCompletado()">
+        <mat-icon>{{ isViaticoCompletado() ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        Detalle viatico
+      </div>
+      <div class="step-chip" [class.done]="solicitudForm.valid && calcularPresupuestoTotal() > 0">
+        <mat-icon>{{ solicitudForm.valid && calcularPresupuestoTotal() > 0 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        Listo para enviar
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="solicitudForm" class="formulario">
+    <!-- Datos Básicos -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon class="section-icon">info</mat-icon>
+        <mat-card-title>Datos Básicos del Viaje</mat-card-title>
+        <mat-card-subtitle>Estimación inicial de costos</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="section-tip">
+          <mat-icon>tips_and_updates</mat-icon>
+          <span>Tip: completa destino, motivo y fechas primero para acelerar la aprobación.</span>
+        </div>
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Moneda de anticipo</mat-label>
+            <mat-select formControlName="monedaAnticipo">
+              <mat-option value="PEN">Soles (PEN)</mat-option>
+              <mat-option value="USD">Dólares (USD)</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>currency_exchange</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Destino</mat-label>
+            <input 
+              matInput 
+              formControlName="destino" 
+              placeholder="Seleccione o escriba una ciudad"
+              [matAutocomplete]="autoDestino" />
+            <mat-icon matPrefix>location_on</mat-icon>
+            <mat-autocomplete 
+              #autoDestino="matAutocomplete"
+              [displayWith]="displayCiudad.bind(this)"
+              (optionSelected)="solicitudForm.get('destino')?.setValue($event.option.value.nombre)">
+              @for (ciudad of ciudadesFiltradas(); track ciudad.id) {
+                <mat-option [value]="ciudad">
+                  <span class="option-main">{{ ciudad.nombre }}</span>
+                  <span class="option-secondary">{{ ciudad.pais }}</span>
+                </mat-option>
+              }
+            </mat-autocomplete>
+            @if (solicitudForm.get('destino')?.hasError('required') && solicitudForm.get('destino')?.touched) {
+              <mat-error>El destino es requerido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Motivo del Viaje</mat-label>
+            <input 
+              matInput 
+              formControlName="motivoViaje" 
+              placeholder="Seleccione o describa el motivo..."
+              [matAutocomplete]="autoMotivo"
+              list="motivosDatalist" />
+            <mat-icon matPrefix>description</mat-icon>
+            <app-voice-input 
+              matSuffix
+              (textCaptured)="onVoiceTextCaptured($event)"
+            ></app-voice-input>
+            <mat-autocomplete #autoMotivo="matAutocomplete">
+              @for (motivo of motivosComunes(); track motivo) {
+                <mat-option [value]="motivo">{{ motivo }}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (solicitudForm.get('motivoViaje')?.hasError('required') && solicitudForm.get('motivoViaje')?.touched) {
+              <mat-error>El motivo es requerido (mínimo 10 caracteres)</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Centro de Costo</mat-label>
+            <input 
+              matInput 
+              formControlName="centroCosto" 
+              placeholder="Seleccione un centro de costo"
+              [matAutocomplete]="autoCentroCosto" />
+            <mat-icon matPrefix>account_balance</mat-icon>
+            <mat-autocomplete 
+              #autoCentroCosto="matAutocomplete"
+              [displayWith]="displayCentroCosto.bind(this)"
+              (optionSelected)="solicitudForm.get('centroCosto')?.setValue($event.option.value.codigo)">
+              @for (cc of centrosCostoFiltrados(); track cc.id) {
+                <mat-option [value]="cc">
+                  <span class="option-main">{{ cc.codigo }}</span>
+                  <span class="option-secondary">{{ cc.nombre }}</span>
+                </mat-option>
+              }
+            </mat-autocomplete>
+            @if (solicitudForm.get('centroCosto')?.hasError('required') && solicitudForm.get('centroCosto')?.touched) {
+              <mat-error>El centro de costo es requerido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de Salida</mat-label>
+            <input
+              matInput
+              [matDatepicker]="pickerSalida"
+              formControlName="fechaSalida"
+              [min]="minDate"
+            />
+            <mat-datepicker-toggle matSuffix [for]="pickerSalida"></mat-datepicker-toggle>
+            <mat-datepicker #pickerSalida></mat-datepicker>
+            @if (solicitudForm.get('fechaSalida')?.hasError('required') && solicitudForm.get('fechaSalida')?.touched) {
+              <mat-error>La fecha de salida es requerida</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de Retorno</mat-label>
+            <input
+              matInput
+              [matDatepicker]="pickerRetorno"
+              formControlName="fechaRetorno"
+              [min]="solicitudForm.get('fechaSalida')?.value || minDate"
+            />
+            <mat-datepicker-toggle matSuffix [for]="pickerRetorno"></mat-datepicker-toggle>
+            <mat-datepicker #pickerRetorno></mat-datepicker>
+            @if (solicitudForm.get('fechaRetorno')?.hasError('required') && solicitudForm.get('fechaRetorno')?.touched) {
+              <mat-error>La fecha de retorno es requerida</mat-error>
+            }
+            @if (!validarFechaRetorno()) {
+              <mat-error>La fecha de retorno debe ser posterior a la salida</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Detalle de Viático -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon class="section-icon">receipt_long</mat-icon>
+        <mat-card-title>Detalle de Viático (Estimado)</mat-card-title>
+        <mat-card-subtitle>Complete montos por concepto. Solo "Otros gastos" requiere justificación.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="section-tip">
+          <mat-icon>lightbulb</mat-icon>
+          <span>Ingresa montos estimados realistas. Si agregas "Otros gastos", detalla la justificación.</span>
+        </div>
+
+        <div class="auto-distribucion-box" *ngIf="!isEditMode()">
+          <div class="auto-head">
+            <div>
+              <strong>Distribución automática activada</strong>
+              <p>Se calcula según fechas y destino con base de viáticos por día.</p>
+            </div>
+            <button mat-stroked-button type="button" (click)="recalcularDistribucionAutomatica()" [disabled]="getPresupuestoSugerido() <= 0">
+              <mat-icon>auto_fix_high</mat-icon>
+              Recalcular
+            </button>
+          </div>
+
+          <div class="auto-kpis">
+            <span>Días: <strong>{{ getDiasViaje() }}</strong></span>
+            <span>Presupuesto sugerido: <strong>{{ getCurrencySymbol(getMonedaAnticipo()) }} {{ getPresupuestoSugerido().toFixed(2) }}</strong></span>
+          </div>
+        </div>
+
+        <div class="viatico-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Alojamiento</mat-label>
+            <input matInput type="number" formControlName="montoAlojamiento" min="0" placeholder="0.00" />
+            <span matPrefix>{{ getCurrencySymbol(getMonedaAnticipo()) }}&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Alimentación</mat-label>
+            <input matInput type="number" formControlName="montoAlimentacion" min="0" placeholder="0.00" />
+            <span matPrefix>{{ getCurrencySymbol(getMonedaAnticipo()) }}&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Transporte</mat-label>
+            <input matInput type="number" formControlName="montoTransporte" min="0" placeholder="0.00" />
+            <span matPrefix>{{ getCurrencySymbol(getMonedaAnticipo()) }}&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Impuestos y Otros</mat-label>
+            <input matInput type="number" formControlName="montoImpuestos" min="0" placeholder="0.00" />
+            <span matPrefix>{{ getCurrencySymbol(getMonedaAnticipo()) }}&nbsp;</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Otros Gastos</mat-label>
+            <input matInput type="number" formControlName="montoOtros" min="0" placeholder="0.00" />
+            <span matPrefix>{{ getCurrencySymbol(getMonedaAnticipo()) }}&nbsp;</span>
+          </mat-form-field>
+        </div>
+
+        @if ((solicitudForm.get('montoOtros')?.value || 0) > 0) {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Justificación de Otros Gastos</mat-label>
+            <textarea matInput formControlName="justificacionOtros" rows="2" maxlength="200" placeholder="Ej: Impresión de material"></textarea>
+            <mat-icon matPrefix>edit_note</mat-icon>
+            <app-voice-input matSuffix (textCaptured)="onJustificacionOtrosCaptured($event)"></app-voice-input>
+            <mat-hint align="end">{{ solicitudForm.get('justificacionOtros')?.value?.length || 0 }}/200</mat-hint>
+            @if (solicitudForm.get('justificacionOtros')?.hasError('required') && solicitudForm.get('justificacionOtros')?.touched) {
+              <mat-error>La justificación es obligatoria cuando hay otros gastos</mat-error>
+            }
+          </mat-form-field>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Resumen de Presupuesto -->
+    <mat-card class="section-card summary-card">
+      <mat-card-header>
+        <mat-icon class="section-icon">calculate</mat-icon>
+        <mat-card-title>Resumen de Presupuesto Estimado</mat-card-title>
+        <mat-card-subtitle>Cálculo automático basado en el detalle de viático</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="presupuesto-total">
+          <span>Anticipo total:</span>
+          <span class="monto">{{ getCurrencySymbol(getMonedaAnticipo()) }} {{ calcularPresupuestoTotal().toFixed(2) }}</span>
+        </div>
+        @if (calcularPresupuestoTotal() <= 0) {
+          <div class="summary-warning">
+            <mat-icon>info</mat-icon>
+            <span>Agrega al menos un monto mayor a cero para continuar.</span>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Acciones -->
+    <div class="form-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="cancelar()"
+        [disabled]="loading()"
+      >
+        Cancelar
+      </button>
+
+      <div class="actions-right">
+        <button
+          mat-raised-button
+          type="button"
+          (click)="guardarBorrador()"
+          [disabled]="loading()"
+        >
+          <mat-icon>save</mat-icon>
+          Guardar Borrador
+        </button>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="enviarAAprobacion()"
+          [disabled]="loading() || !solicitudForm.valid || calcularPresupuestoTotal() <= 0"
+        >
+          <mat-icon>send</mat-icon>
+          Enviar a Aprobación
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

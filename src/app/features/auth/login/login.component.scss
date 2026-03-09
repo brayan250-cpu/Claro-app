@@ -1,0 +1,211 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #E2231A 0%, #B01D15 50%, #8B1710 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+
+  // Efecto de ondas sutiles
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: wave 15s linear infinite;
+  }
+}
+
+.login-card-wrapper {
+  width: 100%;
+  max-width: 450px;
+}
+
+.login-card {
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.5s ease-out;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+
+  .logo-container {
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 0;
+  }
+
+  img.logo-claro {
+    height: 46px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+    animation: fadeInScale 0.45s ease-out;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--claro-text-primary);
+    margin: 0 0 8px 0;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--claro-text-secondary);
+    margin: 0;
+  }
+}
+
+mat-form-field {
+  margin-bottom: 16px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  color: #c62828;
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.login-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+
+  mat-spinner {
+    margin-right: 12px;
+    display: inline-block;
+  }
+}
+
+.demo-info {
+  margin-top: 32px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid var(--claro-primary);
+
+  .demo-title {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--claro-text-primary);
+  }
+
+  .demo-users {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+
+    li {
+      padding: 4px 0;
+      font-size: 13px;
+      color: var(--claro-text-secondary);
+
+      code {
+        background-color: #fff;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        color: var(--claro-primary);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .demo-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--claro-text-tertiary);
+  }
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 24px;
+  color: white;
+  font-size: 14px;
+  opacity: 0.9;
+
+  p {
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .login-card {
+    padding: 24px;
+  }
+
+  .login-header {
+    img.logo-claro {
+      height: 38px;
+    }
+
+    h1 {
+      font-size: 20px;
+    }
+  }
+
+  .demo-info {
+    font-size: 12px;
+  }
+}
+
+// Animaciones
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

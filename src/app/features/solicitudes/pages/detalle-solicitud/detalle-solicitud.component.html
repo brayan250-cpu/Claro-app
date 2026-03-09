@@ -1,0 +1,332 @@
+<div class="detalle-solicitud-container">
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Cargando solicitud...</p>
+    </div>
+  } @else if (solicitud()) {
+    <!-- Header -->
+    <div class="page-header">
+      <button mat-icon-button (click)="volver()" class="btn-back">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-content">
+        <div class="header-top">
+          <div>
+            <h1>{{ solicitud()?.codigo }}</h1>
+            <p class="destino">{{ solicitud()?.destino }}</p>
+          </div>
+          <span class="estado-chip" [ngClass]="getEstadoClass(solicitud()!.estado)">
+            {{ getEstadoLabel(solicitud()!.estado) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="acciones-container">
+      @if (puedeEditar()) {
+        <button mat-raised-button (click)="editar()">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+      }
+
+      @if (puedeEnviar()) {
+        <button mat-raised-button color="primary" (click)="enviarAAprobacion()">
+          <mat-icon>send</mat-icon>
+          Enviar a Aprobación
+        </button>
+      }
+
+      @if (puedeCancelar()) {
+        <button mat-raised-button color="warn" (click)="cancelar()">
+          <mat-icon>cancel</mat-icon>
+          Cancelar Solicitud
+        </button>
+      }
+
+      @if (puedeEliminar()) {
+        <button mat-stroked-button color="warn" (click)="eliminar()">
+          <mat-icon>delete</mat-icon>
+          Eliminar
+        </button>
+      }
+    </div>
+
+    <!-- Información General -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon class="section-icon">info</mat-icon>
+        <mat-card-title>Información General</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          @if (esAprobador()) {
+            <div class="info-item">
+              <label class="titulo">Empleado</label>
+              <p>{{ solicitud()?.empleadoNombre }}</p>
+            </div>
+
+            <div class="info-item">
+              <label class="titulo">Centro de Costo</label>
+              <p>{{ solicitud()?.centroCosto }}</p>
+            </div>
+          }
+
+          <div class="info-item">
+            <label class="titulo">Fecha de Creación</label>
+            <p>{{ formatFecha(solicitud()!.fechaCreacion) }}</p>
+          </div>
+
+          <div class="info-item">
+            <label class="titulo">Fecha de Salida</label>
+            <p>{{ formatFecha(solicitud()!.fechaSalida) }}</p>
+          </div>
+
+          <div class="info-item">
+            <label class="titulo">Fecha de Retorno</label>
+            <p>{{ formatFecha(solicitud()!.fechaRetorno) }}</p>
+          </div>
+
+          <div class="info-item">
+            <label class="titulo">Presupuesto Total</label>
+            <p class="presupuesto-total monto-float-right">{{ formatMonto(solicitud()!.presupuestoTotal) }}</p>
+          </div>
+        </div>
+
+        <mat-divider class="divider"></mat-divider>
+
+        <div class="info-item full-width">
+          <label class="titulo">Motivo del Viaje</label>
+          <p class="motivo-text">{{ solicitud()?.motivoViaje }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- MÓDULO 2.1: Desglose de Gastos por 5 Conceptos -->
+    <mat-card class="section-card distribucion-gastos">
+      <mat-card-header>
+        <mat-icon class="section-icon">pie_chart</mat-icon>
+        <mat-card-title class="titulo">Distribución de Viáticos por Concepto</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="categorias-grid">
+          @for (dist of distribucionGastos(); track dist.categoria) {
+            <div class="categoria-tile" [class]="'cat-' + dist.categoria.toLowerCase()">
+              <mat-icon class="categoria-icon">
+                {{ getCategoriaIcon(dist.categoria) }}
+              </mat-icon>
+              <h3 class="titulo">{{ dist.categoria }}</h3>
+              <div class="categoria-porcentaje">{{ dist.porcentaje | number:'1.0-0' }}%</div>
+              <div class="categoria-monto monto-float-right">{{ formatMonto(dist.monto) }}</div>
+              @if (dist.categoria === 'Otros') {
+                <div class="requiere-justificacion">
+                  <mat-icon>info</mat-icon>
+                  <span>Requiere justificación</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+        
+        <mat-divider class="divider"></mat-divider>
+        
+        <div class="resumen-total">
+          <div class="resumen-item">
+            <span class="titulo">Presupuesto Total:</span>
+            <span class="monto-float-right">{{ formatMonto(solicitud()!.presupuestoTotal) }}</span>
+          </div>
+          <div class="resumen-item">
+            <span class="titulo">Total Gastado:</span>
+            <span class="monto-float-right" [class.excedido]="excedioPresupuesto()">
+              {{ formatMonto(totalGastado()) }}
+            </span>
+          </div>
+          <div class="resumen-item saldo-final" [class.excedido]="excedioPresupuesto()">
+            <span class="titulo">{{ excedioPresupuesto() ? 'Excedido:' : 'Saldo:' }}</span>
+            <span class="monto-float-right">{{ formatMonto(Math.abs(saldoRestante())) }}</span>
+          </div>
+        </div>
+
+        @if (excedioPresupuesto()) {
+          <div class="alerta-exceso">
+            <mat-icon>warning</mat-icon>
+            <span>Presupuesto excedido. Requiere justificación adicional.</span>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Pasajes -->
+    @if (solicitud()?.pasajes && solicitud()!.pasajes.length > 0) {
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon class="section-icon">flight</mat-icon>
+          <mat-card-title>Pasajes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="table-container">
+            <table mat-table [dataSource]="solicitud()!.pasajes">
+              <ng-container matColumnDef="tipo">
+                <th mat-header-cell *matHeaderCellDef>Tipo</th>
+                <td mat-cell *matCellDef="let pasaje">
+                  <mat-chip class="tipo-chip">{{ pasaje.tipo }}</mat-chip>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="origen">
+                <th mat-header-cell *matHeaderCellDef>Origen</th>
+                <td mat-cell *matCellDef="let pasaje">{{ pasaje.origen }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="destino">
+                <th mat-header-cell *matHeaderCellDef>Destino</th>
+                <td mat-cell *matCellDef="let pasaje">{{ pasaje.destino }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="fecha">
+                <th mat-header-cell *matHeaderCellDef>Fecha</th>
+                <td mat-cell *matCellDef="let pasaje">{{ formatFecha(pasaje.fecha) }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="monto">
+                <th mat-header-cell *matHeaderCellDef>Monto</th>
+                <td mat-cell *matCellDef="let pasaje" class="monto-cell">
+                  {{ formatMonto(pasaje.monto) }}
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="pasajesColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: pasajesColumns"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Hospedajes -->
+    @if (solicitud()?.hospedajes && solicitud()!.hospedajes.length > 0) {
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon class="section-icon">hotel</mat-icon>
+          <mat-card-title>Hospedajes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="table-container">
+            <table mat-table [dataSource]="solicitud()!.hospedajes">
+              <ng-container matColumnDef="hotel">
+                <th mat-header-cell *matHeaderCellDef>Hotel</th>
+                <td mat-cell *matCellDef="let hospedaje">{{ hospedaje.hotel }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="ciudad">
+                <th mat-header-cell *matHeaderCellDef>Ciudad</th>
+                <td mat-cell *matCellDef="let hospedaje">{{ hospedaje.ciudad }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="fechas">
+                <th mat-header-cell *matHeaderCellDef>Fechas</th>
+                <td mat-cell *matCellDef="let hospedaje">
+                  {{ formatFechasHospedaje(hospedaje.fechaCheckIn, hospedaje.fechaCheckOut) }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="noches">
+                <th mat-header-cell *matHeaderCellDef>Noches</th>
+                <td mat-cell *matCellDef="let hospedaje">{{ hospedaje.numNoches }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="monto">
+                <th mat-header-cell *matHeaderCellDef>Monto Total</th>
+                <td mat-cell *matCellDef="let hospedaje" class="monto-cell">
+                  {{ formatMonto(calcularMontoHospedaje(hospedaje.numNoches, hospedaje.montoPorNoche)) }}
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="hospedajesColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: hospedajesColumns"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Historial de Estados -->
+    @if (solicitud()?.historialEstados && solicitud()!.historialEstados.length > 0) {
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon class="section-icon">history</mat-icon>
+          <mat-card-title>Historial de Estados</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="timeline">
+            @for (historial of solicitud()!.historialEstados; track $index) {
+              <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                  <div class="timeline-header">
+                    <span class="estado-chip small" [ngClass]="getEstadoClass(historial.estado)">
+                      {{ getEstadoLabel(historial.estado) }}
+                    </span>
+                    <span class="timeline-fecha">{{ formatFecha(historial.fecha) }}</span>
+                  </div>
+                  <p class="timeline-usuario">{{ historial.usuario }}</p>
+                  @if (historial.comentario) {
+                    <p class="timeline-comentario">{{ historial.comentario }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <mat-card class="section-card" *ngIf="rendicionesSolicitud().length > 0">
+      <mat-card-header>
+        <mat-icon class="section-icon">receipt_long</mat-icon>
+        <mat-card-title>Gastos registrados y comprobantes</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="rendiciones-grid">
+          @for (r of rendicionesSolicitud(); track r.id) {
+            <div class="rendicion-item">
+              <div class="rendicion-thumb" [class.has-image]="isImageComprobante(r.comprobante)">
+                @if (isImageComprobante(r.comprobante)) {
+                  <img [src]="r.comprobante!" alt="Comprobante" />
+                } @else {
+                  <mat-icon>{{ r.comprobante ? 'picture_as_pdf' : 'receipt_long' }}</mat-icon>
+                }
+              </div>
+              <div class="rendicion-body">
+                <div class="rendicion-top">
+                  <strong>{{ r.proveedor || r.concepto }}</strong>
+                  <span class="estado-chip small">{{ getEstadoRendicionLabel(r.estado) }}</span>
+                </div>
+                <div class="rendicion-meta">
+                  <span>{{ getEstadoRendicionLabel(r.estado) }} - {{ formatFecha(r.fecha) }}</span>
+                  <strong class="monto-float-right">{{ formatMontoRendicion(r) }}</strong>
+                </div>
+                <div class="rendicion-actions">
+                  <button mat-stroked-button type="button" (click)="abrirComprobante(r)" [disabled]="!r.comprobante">
+                    <mat-icon>visibility</mat-icon>
+                    {{ r.comprobante ? 'Ver comprobante' : 'Sin comprobante' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="empty-state">
+      <mat-icon>error_outline</mat-icon>
+      <h2>Solicitud no encontrada</h2>
+      <button mat-raised-button color="primary" (click)="volver()">
+        Volver al listado
+      </button>
+    </div>
+  }
+</div>

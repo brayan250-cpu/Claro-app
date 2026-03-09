@@ -1,0 +1,499 @@
+.formulario-solicitud-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .btn-back {
+      margin-top: 8px;
+    }
+
+    .header-content {
+      flex: 1;
+
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--claro-text-primary);
+      }
+
+      p {
+        margin: 0;
+        font-size: 16px;
+        color: var(--claro-text-secondary);
+      }
+    }
+  }
+
+  .quick-access {
+    background: linear-gradient(135deg, #E30613 0%, #c00510 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(227, 6, 19, 0.2);
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .chip-destino {
+        background-color: white;
+        color: var(--claro-primary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          margin-right: 4px;
+        }
+
+        &:hover {
+          background-color: #fff5f6;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+
+  .ux-progress-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f7f9fc 100%);
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+
+    .ux-progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .progress-pill {
+      background: #E30613;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .progress-text {
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .progress-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .step-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #eef2f7;
+        color: #4b5563;
+        font-size: 12px;
+        font-weight: 500;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+
+        &.done {
+          background: #e8f5e9;
+          color: #2e7d32;
+        }
+      }
+    }
+  }
+
+  .formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .section-card {
+      .section-tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #e3f2fd;
+        background: #f4f9ff;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          color: #1e88e5;
+          margin-top: 1px;
+        }
+
+        span {
+          font-size: 12px;
+          color: #4b5563;
+          line-height: 1.35;
+        }
+      }
+
+      mat-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        position: relative;
+
+        .section-icon {
+          color: var(--claro-primary);
+          font-size: 28px;
+          width: 28px;
+          height: 28px;
+        }
+
+        mat-card-title {
+          flex: 1;
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .btn-add-section {
+          color: var(--claro-primary);
+
+          mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+          }
+        }
+      }
+
+      mat-card-content {
+        padding-top: 0;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 16px;
+
+        .full-width {
+          grid-column: 1 / -1;
+        }
+      }
+
+      .viatico-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 8px;
+      }
+
+      .auto-distribucion-box {
+        border: 1px solid #dbe7ff;
+        background: linear-gradient(135deg, #eff5ff 0%, #ffffff 100%);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 14px;
+
+        .auto-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+
+          strong {
+            display: block;
+            color: #1e3a8a;
+            font-size: 14px;
+          }
+
+          p {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: #475569;
+          }
+        }
+
+        .auto-kpis {
+          margin-top: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+
+          span {
+            font-size: 12px;
+            color: #334155;
+            background: #fff;
+            border: 1px solid #dbe7ff;
+            border-radius: 999px;
+            padding: 4px 10px;
+          }
+        }
+      }
+
+      .subsection {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        background-color: #fafafa;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .subsection-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+
+          h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--claro-text-primary);
+          }
+        }
+      }
+    }
+
+    .summary-card {
+      background-color: #f5f5f5;
+      border: 2px solid var(--claro-primary);
+
+      .presupuesto-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 24px;
+        font-weight: 600;
+        padding: 16px 0;
+
+        .monto {
+          color: var(--claro-primary);
+          font-size: 32px;
+        }
+      }
+
+      .summary-warning {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+        font-size: 13px;
+        color: #e65100;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 24px 0;
+      border-top: 1px solid #e0e0e0;
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(4px);
+
+      .actions-right {
+        display: flex;
+        gap: 12px;
+      }
+
+      button {
+        mat-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// Estilos para campos de formulario
+::ng-deep {
+  .formulario-solicitud-container {
+    .mat-mdc-form-field {
+      width: 100%;
+
+      .mat-mdc-text-field-wrapper {
+        padding-bottom: 0;
+      }
+    }
+
+    .mat-mdc-form-field-error {
+      font-size: 12px;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .formulario-solicitud-container {
+    padding: 16px;
+
+    .ux-progress-card {
+      padding: 10px 12px;
+
+      .ux-progress-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .progress-text {
+        font-size: 12px;
+      }
+    }
+
+    .page-header {
+      flex-direction: column;
+
+      .btn-back {
+        margin-top: 0;
+      }
+
+      .header-content {
+        h1 {
+          font-size: 24px;
+        }
+
+        p {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .formulario {
+      .section-card {
+        mat-card-header {
+          flex-wrap: wrap;
+
+          mat-card-title {
+            font-size: 18px;
+          }
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .subsection {
+          padding: 16px;
+
+          .subsection-header {
+            h4 {
+              font-size: 14px;
+            }
+          }
+        }
+
+        .auto-distribucion-box .auto-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .summary-card {
+        .presupuesto-total {
+          flex-direction: column;
+          gap: 8px;
+          text-align: center;
+
+          .monto {
+            font-size: 28px;
+          }
+        }
+      }
+
+      .form-actions {
+        flex-direction: column;
+        padding: 12px 0 8px;
+
+        button,
+        .actions-right {
+          width: 100%;
+        }
+
+        .actions-right {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+}
+
+// Estilos para opciones de autocomplete
+::ng-deep .mat-mdc-autocomplete-panel {
+  .mat-mdc-option {
+    .option-main {
+      display: block;
+      font-weight: 500;
+      color: var(--claro-text-primary);
+    }
+
+    .option-secondary {
+      display: block;
+      font-size: 12px;
+      color: var(--claro-text-secondary);
+      margin-top: 2px;
+    }
+
+    &:hover {
+      .option-main {
+        color: var(--claro-primary);
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+<button 
+  mat-icon-button
+  type="button"
+  [color]="getColor()"
+  [matTooltip]="getTooltip()"
+  (click)="toggleRecording()"
+  [class.listening]="state() === 'listening'"
+  [class.error]="state() === 'error'"
+  class="voice-button">
+  <mat-icon>{{ getIcon() }}</mat-icon>
+</button>
+
+@if (state() === 'listening') {
+  <div class="listening-indicator">
+    <span class="pulse"></span>
+    <span class="text">Escuchando...</span>
+  </div>
+}
+
+@if (state() === 'error' && errorMessage()) {
+  <div class="error-message">
+    {{ errorMessage() }}
+  </div>
+}
